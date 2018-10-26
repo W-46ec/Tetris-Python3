@@ -11,83 +11,91 @@ from tkinter import filedialog
 
 # 核心模块
 class Core():
-	mainMatrixBuffer = 2						# 缓冲大小
-	row = 20									# 面板格子行数
-	column = 15									# 面板格子列数
-	matrixRow = row + mainMatrixBuffer			# 矩阵行数
-	matrixColumn = column + mainMatrixBuffer	# 矩阵列数
+	matrixBuffer = 2						# 缓冲大小
+	row = 20								# 面板格子行数
+	column = 15								# 面板格子列数
+	matrixRow = row + matrixBuffer			# 矩阵行数
+	matrixColumn = column + matrixBuffer	# 矩阵列数
 
 	score = 0					# 分数
 	initInterval = 0.5			# 方块下落初始速度
 	interval = initInterval 	# 方块下落当前速度
 
-	mainMatrix = []		# 主矩阵
+	matrix = []		# 主矩阵
 
 	# 方块信息
 	tetromino = {
-		'I': (((1, 0), (1, 1), (1, 2), (1, 3)), 
-			((0, 1), (1, 1), (2, 1), (3, 1))), 
-		'O': (((0, 1), (0, 2), (1, 1), (1, 2)), ), 
-		'T': (((0, 1), (1, 0), (1, 1), (1, 2)), 
+		'I': (
+			((1, 0), (1, 1), (1, 2), (1, 3)), 
+			((0, 1), (1, 1), (2, 1), (3, 1))
+		), 
+		'O': (
+			((0, 1), (0, 2), (1, 1), (1, 2)), 
+		), 
+		'T': (
+			((0, 1), (1, 0), (1, 1), (1, 2)), 
 			((0, 1), (1, 1), (1, 2), (2, 1)), 
 			((1, 0), (1, 1), (1, 2), (2, 1)), 
-			((0, 1), (1, 0), (1, 1), (2, 1))), 
-		'L': (((0, 1), (1, 1), (2, 1), (2, 2)), 
+			((0, 1), (1, 0), (1, 1), (2, 1))
+		), 
+		'L': (
+			((0, 1), (1, 1), (2, 1), (2, 2)), 
 			((1, 0), (1, 1), (1, 2), (2, 0)), 
 			((0, 0), (0, 1), (1, 1), (2, 1)), 
-			((0, 2), (1, 0), (1, 1), (1, 2))), 
-		'J': (((0, 1), (1, 1), (2, 0), (2, 1)), 
+			((0, 2), (1, 0), (1, 1), (1, 2))
+		), 
+		'J': (
+			((0, 1), (1, 1), (2, 0), (2, 1)), 
 			((0, 0), (1, 0), (1, 1), (1, 2)), 
 			((0, 1), (0, 2), (1, 1), (2, 1)), 
-			((1, 0), (1, 1), (1, 2), (2, 2))), 
-		'S': (((0, 1), (1, 1), (1, 2), (2, 2)), 
-			((0, 1), (0, 2), (1, 0), (1, 1))), 
-		'Z': (((0, 1), (1, 1), (1, 0), (2, 0)), 
-			((0, 0), (0, 1), (1, 1), (1, 2)))
+			((1, 0), (1, 1), (1, 2), (2, 2))
+		), 
+		'S': (
+			((0, 1), (1, 1), (1, 2), (2, 2)), 
+			((0, 1), (0, 2), (1, 0), (1, 1))
+		), 
+		'Z': (
+			((0, 1), (1, 1), (1, 0), (2, 0)), 
+			((0, 0), (0, 1), (1, 1), (1, 2))
+		)
 	}
 
 	# 初始化
 	def __init__(self):
-		self.initMainMatrix()
+		self.initMatrix()
 
 	# 主矩阵初始化
-	def initMainMatrix(self):
+	def initMatrix(self):
 		for i in range(self.matrixRow):	# 矩阵外围一圈为缓冲区
-			self.mainMatrix.append([])
-			for j in range(self.matrixColumn):
-				self.mainMatrix[i].append(0)
+			self.matrix.append([0] * self.matrixColumn)
 
 	# 生成种子
 	def generateSeed(self):
 		types = "IOTLJSZ"
+		randNum = random.randint(0, len(types) - 1)
 		seed = {
-			'type': None, 
-			'state': None
+			'type': types[randNum], 
+			'state': random.randint(0, len(self.tetromino[types[randNum]]) - 1)
 		}
-		seed['type'] = types[random.randint(0, len(types) - 1)]
-		seed['state'] = random.randint(0, len(self.tetromino[seed['type']]) - 1)
 		return seed
 
-	# 生成一个 dict 形式的方块信息
+	# 生成一个 dict 类型的方块信息
 	def generateTetromino(self, seed):
 		block = {
 			'x': 1, 
-			'y': 7, 
-			'type': 'X',
-			'state': 0
+			'y': self.column // 2, 
+			'type': seed['type'],
+			'state': seed['state']
 		}
-		matrixInfo = self.tetromino[seed['type']][seed['state']]
-		block['type'] = seed['type']
-		block['state'] = seed['state']
 		return block
 
 	# 将方块写入主矩阵
 	def writeTetromino(self, block):
 		matrixInfo = self.tetromino[block['type']][block['state']]
 		for i in range(4):
-			self.mainMatrix[1 + matrixInfo[i][0]][7 + matrixInfo[i][1]] = 1
+			self.matrix[1 + matrixInfo[i][0]][self.column // 2 + matrixInfo[i][1]] = 1
 
-	# 生成一个 4*4 的 list 形式的方块信息矩阵
+	# 生成一个 4*4 的 list 类型的方块信息矩阵
 	def generateBlockMatrix(self, block):
 		matrixInfo = self.tetromino[block['type']][block['state']]
 		x = block['x']
@@ -95,9 +103,7 @@ class Core():
 		BlockMatrix = []
 
 		for i in range(4):
-			BlockMatrix.append([])
-			for j in range(4):
-				BlockMatrix[i].append(0)
+			BlockMatrix.append([0] * 4)
 
 		for i in matrixInfo:
 			BlockMatrix[i[0]][i[1]] = 1
@@ -155,21 +161,21 @@ class Core():
 				return False
 			y += 1
 			for i in border['Right']:
-				if self.mainMatrix[x + i[0]][y + i[1]] == 1:
+				if self.matrix[x + i[0]][y + i[1]] == 1:
 					return False
 		elif direction == 'Left':
 			if border['l_min'] + y <= 1:
 				return False
 			y -= 1
 			for i in border['Left']:
-				if self.mainMatrix[x + i[0]][y + i[1]] == 1:
+				if self.matrix[x + i[0]][y + i[1]] == 1:
 					return False
 		elif direction == 'Down':
 			if border['bottom_max'] + x >= self.row:
 				return False
 			x += 1
 			for i in border['bottom']:
-				if self.mainMatrix[x + i[0]][y + i[1]] == 1:
+				if self.matrix[x + i[0]][y + i[1]] == 1:
 					return False
 		return True
 
@@ -183,21 +189,21 @@ class Core():
 		if direction == 'Right':
 			if self.moveCheck(block, 'Right') == True:
 				for i in range(4):
-					self.mainMatrix[x + matrixInfo[i][0]][y + matrixInfo[i][1]] = 0
+					self.matrix[x + matrixInfo[i][0]][y + matrixInfo[i][1]] = 0
 				y += 1
 				block['y'] += 1
 				for i in range(4):
-					self.mainMatrix[x + matrixInfo[i][0]][y + matrixInfo[i][1]] = 1
+					self.matrix[x + matrixInfo[i][0]][y + matrixInfo[i][1]] = 1
 
 		# 左移
 		elif direction == 'Left':
 			if self.moveCheck(block, 'Left') == True:
 				for i in range(4):
-					self.mainMatrix[x + matrixInfo[i][0]][y + matrixInfo[i][1]] = 0
+					self.matrix[x + matrixInfo[i][0]][y + matrixInfo[i][1]] = 0
 				y -= 1
 				block['y'] -= 1
 				for i in range(4):
-					self.mainMatrix[x + matrixInfo[i][0]][y + matrixInfo[i][1]] = 1
+					self.matrix[x + matrixInfo[i][0]][y + matrixInfo[i][1]] = 1
 
 		# 下移
 		elif direction == 'Down':
@@ -207,10 +213,10 @@ class Core():
 				while self.moveCheck(block, 'Down') == True:
 					block['x'] += 1
 				for i in range(4):
-					self.mainMatrix[x + matrixInfo[i][0]][y + matrixInfo[i][1]] = 0
+					self.matrix[x + matrixInfo[i][0]][y + matrixInfo[i][1]] = 0
 				x = block['x']
 				for i in range(4):
-					self.mainMatrix[x + matrixInfo[i][0]][y + matrixInfo[i][1]] = 1
+					self.matrix[x + matrixInfo[i][0]][y + matrixInfo[i][1]] = 1
 				return 1		# 方块以固定
 
 			# 自动下移
@@ -220,10 +226,10 @@ class Core():
 				else:
 					return 1		# 方块以固定
 				for i in range(4):
-					self.mainMatrix[x + matrixInfo[i][0]][y + matrixInfo[i][1]] = 0
+					self.matrix[x + matrixInfo[i][0]][y + matrixInfo[i][1]] = 0
 				x = block['x']
 				for i in range(4):
-					self.mainMatrix[x + matrixInfo[i][0]][y + matrixInfo[i][1]] = 1
+					self.matrix[x + matrixInfo[i][0]][y + matrixInfo[i][1]] = 1
 
 	# 旋转检测函数
 	def rotateCheck(self, block):
@@ -247,14 +253,14 @@ class Core():
 			border['bottom_max'] + x > self.row:
 			return False
 		for i in range(4):
-			self.mainMatrix[x + prevMatrixInfo[i][0]][y + prevMatrixInfo[i][1]] = 0
+			self.matrix[x + prevMatrixInfo[i][0]][y + prevMatrixInfo[i][1]] = 0
 		for i in range(4):
-			if self.mainMatrix[x + newMatrixInfo[i][0]][y + newMatrixInfo[i][1]] == 1:
+			if self.matrix[x + newMatrixInfo[i][0]][y + newMatrixInfo[i][1]] == 1:
 				for i in range(4):
-					self.mainMatrix[x + prevMatrixInfo[i][0]][y + prevMatrixInfo[i][1]] = 1
+					self.matrix[x + prevMatrixInfo[i][0]][y + prevMatrixInfo[i][1]] = 1
 				return False
 		for i in range(4):
-			self.mainMatrix[x + prevMatrixInfo[i][0]][y + prevMatrixInfo[i][1]] = 1
+			self.matrix[x + prevMatrixInfo[i][0]][y + prevMatrixInfo[i][1]] = 1
 		return True
 
 	# 旋转函数
@@ -267,17 +273,17 @@ class Core():
 			state = (block['state'] + 1) % length
 			block['state'] = state
 			for i in range(4):
-				self.mainMatrix[x + matrixInfo[i][0]][y + matrixInfo[i][1]] = 0
+				self.matrix[x + matrixInfo[i][0]][y + matrixInfo[i][1]] = 0
 			matrixInfo = self.tetromino[block['type']][state]
 			for i in range(4):
-				self.mainMatrix[x + matrixInfo[i][0]][y + matrixInfo[i][1]] = 1
+				self.matrix[x + matrixInfo[i][0]][y + matrixInfo[i][1]] = 1
 
 	# 消除检测 (返回可以被消除的行号)
 	def rmRowDetect(self, startRow):
 		for i in range(startRow, 0, -1):
 			counter = 0
 			for j in range(1, self.column + 1):
-				if self.mainMatrix[i][j] == 1:
+				if self.matrix[i][j] == 1:
 					counter += 1
 			if counter == self.column:
 				return i 		# 返回行号
@@ -291,7 +297,7 @@ class Core():
 		if row > 0:
 			for i in range(row, 0, -1):
 				for j in range(1, self.column + 1):
-					self.mainMatrix[i][j] = self.mainMatrix[i - 1][j]
+					self.matrix[i][j] = self.matrix[i - 1][j]
 			self.score += 1		# 分数增加
 			if self.initInterval - 0.1 * int(self.score / 10) > 0.1:
 				self.interval = self.initInterval - 0.1 * int(self.score / 10)	# 自动下落时间间隔衰减
@@ -305,14 +311,14 @@ class Core():
 	def isLose(self):
 		for i in range(4):
 			for j in range(4):
-				if self.mainMatrix[1 + i][7 + j] == 1:
+				if self.matrix[1 + i][self.column // 2 + j] == 1:
 					return True
 		return False
 
 	# 在控制台输出矩阵信息(测试用)
-	def ConsolePrintMainMatrix(self):
+	def ConsolePrintMatrix(self):
 		for i in range(self.matrixRow):
-			print(self.mainMatrix[i])
+			print(self.matrix[i])
 
 
 # 控制模块
@@ -436,13 +442,13 @@ class Control():
 			'row': self.core.row, 
 			'score': self.core.score, 
 			'interval': self.core.interval, 
-			'mainMatrix': self.core.mainMatrix
+			'matrix': self.core.matrix
 		}
 
 	# 获取用于保存文件的所有参数
 	def getAllInfo(self):
 		return {
-			'mainMatrix': self.core.mainMatrix, 
+			'matrix': self.core.matrix, 
 			'score': self.core.score, 
 			'interval': self.core.interval, 
 			'block': self.block, 
@@ -461,6 +467,37 @@ class Control():
 # 文件模块
 class File():
 
+	# 数据过滤
+	def loadDataFilter(self, core, content):
+		for i in range(core.matrixRow):
+			for j in range(core.matrixColumn):
+				if i == 0 or i == core.matrixRow - 1 or \
+					j == 0 or j == core.matrixColumn - 1:
+					if content['matrix'][i][j] == 1:
+						return False
+				else:
+					if content['matrix'][i][j] != 1 and \
+						content['matrix'][i][j] != 0:
+						return False
+				core.matrix[i][j] = content['matrix'][i][j]
+		if content['interval'] < 0:
+			return False
+		if content['block']['x'] < 1 or content['block']['x'] > core.row:
+			return False
+		if content['block']['y'] < 1 or content['block']['y'] > core.column:
+			return False
+		if content['block']['type'] not in 'IOTLJSZ':
+			return False
+		if content['block']['state'] < 0 or \
+			content['block']['state'] > len(core.tetromino[content['block']['type']]):
+			return False
+		if content['nextBlockSeed']['type'] not in 'IOTLJSZ':
+			return False
+		if content['nextBlockSeed']['state'] < 0 or \
+			content['nextBlockSeed']['state'] > len(core.tetromino[content['block']['type']]):
+			return False
+		return True
+
 	# 读档
 	def load(self, core, control):
 		path = filedialog.askopenfilename()		# 获取存档路径
@@ -471,20 +508,23 @@ class File():
 
 					# 写入数据
 					try:
-						for i in range(1, core.row + 1):
-							for j in range(1, core.column + 1):
-								core.mainMatrix[i][j] = content['mainMatrix'][i][j]
-						core.score = content['score']
-						core.interval = content['interval']
-						control.block['x'] = content['block']['x']
-						control.block['y'] = content['block']['y']
-						control.block['type'] = content['block']['type']
-						control.block['state'] = content['block']['state']
-						control.nextBlockSeed['type'] = content['nextBlockSeed']['type']
-						control.nextBlockSeed['state'] = content['nextBlockSeed']['state']
-						control.stopThread = True
-						control.pause = True
-						control.start = True
+						if self.loadDataFilter(core, content) == True:
+							for i in range(1, core.row + 1):
+								for j in range(1, core.column + 1):
+									core.matrix[i][j] = content['matrix'][i][j]
+							core.score = content['score']
+							core.interval = content['interval']
+							control.block['x'] = content['block']['x']
+							control.block['y'] = content['block']['y']
+							control.block['type'] = content['block']['type']
+							control.block['state'] = content['block']['state']
+							control.nextBlockSeed['type'] = content['nextBlockSeed']['type']
+							control.nextBlockSeed['state'] = content['nextBlockSeed']['state']
+							control.stopThread = True
+							control.pause = True
+							control.start = True
+						else:
+							messagebox.showerror('Error', '参数错误')	# 游戏参数错误
 					except BaseException as err:
 						messagebox.showerror('Error', 'Unknown error')	# 游戏参数错误
 		except BaseException as e:
@@ -833,12 +873,12 @@ class Graph():
 		parameter = self.control.getParameter()
 		for i in range(parameter['row']):
 			for j in range(parameter['column']):
-				if parameter['mainMatrix'][i + 1][j + 1] == 1:
+				if parameter['matrix'][i + 1][j + 1] == 1:
 					self.gameCv.itemconfig(
 						self.graphMatrix[i][j], 
 						state = NORMAL
 					)
-				elif parameter['mainMatrix'][i + 1][j + 1] == 0:
+				elif parameter['matrix'][i + 1][j + 1] == 0:
 					self.gameCv.itemconfig(
 						self.graphMatrix[i][j], 
 						state = HIDDEN
@@ -883,7 +923,6 @@ class Graph():
 
 	# 键盘事件处理函数
 	def onKeyboardEvent(self, event):
-		
 		# 预先捕捉的事件处理
 		if self.control.start == False:		# 进入帮助页
 			if self.control.helpPage == False:
@@ -906,7 +945,8 @@ class Graph():
 				)
 				return
 		if self.control.start == True:	# 捕获 Ctrl 状态
-			if event.state == 4:
+
+			if event.char == '\x13':
 				operationInfo = self.control.operation(event.char)
 			if self.control.pause == True:	# 暂停提示框
 				self.showPauseBox('On')
@@ -972,7 +1012,7 @@ class Graph():
 						self.drawNext(self.control.generateNextBlock())
 						self.draw()
 					else:		# 输
-						messagebox.showinfo('Message', 'You lose!')
+						messagebox.showinfo('Message', 'Game over!')
 						os._exit(0)
 				time.sleep(self.control.getParameter()['interval'])
 
