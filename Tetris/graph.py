@@ -384,6 +384,18 @@ class Graph():
 			fill = 'white'
 		)
 
+	# 重启
+	def restart(self):
+		self.control.reset()
+		self.cv.itemconfig(
+			self.gameWindow, 
+			state = HIDDEN
+		)
+		self.cv.itemconfig(
+			self.menuWindow, 
+			state = NORMAL
+		)
+
 	# 键盘事件处理函数
 	def onKeyboardEvent(self, event):
 		# 预先捕捉的事件处理
@@ -476,5 +488,5 @@ class Graph():
 						self.draw()
 					else:		# 输
 						messagebox.showinfo('Message', 'Game over!')
-						os._exit(0)
+						self.restart()
 				time.sleep(self.control.getParameter()['interval'])

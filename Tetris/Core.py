@@ -302,6 +302,15 @@ class Core():
 					return True
 		return False
 
+	# 复位
+	def resetCore(self):
+		for i in range(len(self.matrix)):
+			for j in range(len(self.matrix[i])):
+				self.matrix[i][j] = 0
+		self.score = setting.score
+		self.initInterval = setting.initInterval
+		self.interval = setting.interval
+
 	# 在控制台输出矩阵信息(测试用)
 	def ConsolePrintMatrix(self):
 		for i in range(self.matrixRow):

@@ -141,3 +141,13 @@ class Control():
 	# 返回是否输信息
 	def getIsLose(self):
 		return self.core.isLose()
+
+	# 复位
+	def reset(self):
+		self.core.resetCore()
+		self.nextBlockSeed = self.core.generateSeed()
+		self.nextBlock()
+		self.stopThread = True
+		self.pause = False
+		self.start = False
+		self.helpPage = False
