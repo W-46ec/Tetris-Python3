@@ -399,6 +399,8 @@ class Graph():
 	# 键盘事件处理函数
 	def onKeyboardEvent(self, event):
 		# 预先捕捉的事件处理
+		if event.char == '\x12':	# Ctrl + R 重启
+			self.restart()
 		if self.control.start == False:		# 进入帮助页
 			if self.control.helpPage == False:
 				if event.keysym == 'h' or event.keysym == 'H':
@@ -419,9 +421,9 @@ class Graph():
 					state = HIDDEN
 				)
 				return
-		if self.control.start == True:	# 捕获 Ctrl 状态
+		if self.control.start == True:	# 捕获游戏开始后的 Ctrl 状态
 
-			if event.char == '\x13':
+			if event.char == '\x13':	# Ctrl + S 保存
 				operationInfo = self.control.operation(event.char)
 			if self.control.pause == True:	# 暂停提示框
 				self.showPauseBox('On')

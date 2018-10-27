@@ -35,6 +35,25 @@ class Control():
 			'Exit': False
 		}
 
+		# 退出
+		if key == 'Escape':
+			self.stopThread = True
+			if self.start == True:
+				self.pause = True
+			operationInfo['Exit'] = True
+
+		# 开始游戏
+		if key == 'n' or key == 'N':
+			if self.start == False:
+				self.pause = False
+				self.stopThread = False
+				self.start = True
+
+		# 加载存档
+		if key == 'l' or key == 'L':
+			if self.start == False:
+				File().load(self.core, self)
+
 		# 游戏操作
 		if self.start == True:
 			# 方向操作
@@ -77,26 +96,7 @@ class Control():
 			if key == '\x13':
 				self.stopThread = True
 				self.pause = True
-				File().save(str(self.getAllInfo()))
-
-		# 退出
-		if key == 'Escape':
-			self.stopThread = True
-			if self.start == True:
-				self.pause = True
-			operationInfo['Exit'] = True
-
-		# 开始游戏
-		if key == 'n' or key == 'N':
-			if self.start == False:
-				self.pause = False
-				self.stopThread = False
-				self.start = True
-
-		# 加载存档
-		if key == 'l' or key == 'L':
-			if self.start == False:
-				File().load(self.core, self)
+				File().save(self.getAllInfo())
 			
 		return operationInfo
 
