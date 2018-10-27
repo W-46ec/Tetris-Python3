@@ -21,9 +21,9 @@ class File():
 				core.matrix[i][j] = content['matrix'][i][j]
 		if content['interval'] < 0:
 			return False
-		if content['block']['x'] < 1 or content['block']['x'] > core.row:
+		if content['block']['x'] < 0 or content['block']['x'] > core.row:
 			return False
-		if content['block']['y'] < 1 or content['block']['y'] > core.column:
+		if content['block']['y'] < 0 or content['block']['y'] > core.column:
 			return False
 		if content['block']['type'] not in 'IOTLJSZ':
 			return False
@@ -39,17 +39,16 @@ class File():
 
 	# 读档
 	def load(self, core, control):
-		path = filedialog.askopenfilename(	# 获取存档路径
-			filetypes = (
-				("JSON", "*.json*"), 
-				("All files", "*.*")
-			)
-		)
 		try:
+			path = filedialog.askopenfilename(	# 获取存档路径
+				filetypes = (
+					("JSON", "*.json*"), 
+					("All files", "*.*")
+				)
+			)
 			if path:
 				with open(path, 'r') as f:
 					content = json.loads(f.read())
-					# content = ast.literal_eval(f.read())	# 读取文件
 
 					# 写入数据
 					try:
