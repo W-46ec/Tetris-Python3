@@ -1,4 +1,4 @@
-import ast
+import json
 import tkinter.messagebox as messagebox
 from tkinter.filedialog import askdirectory
 from tkinter import filedialog
@@ -39,11 +39,17 @@ class File():
 
 	# 读档
 	def load(self, core, control):
-		path = filedialog.askopenfilename()		# 获取存档路径
+		path = filedialog.askopenfilename(	# 获取存档路径
+			filetypes = (
+				("JSON", "*.json*"), 
+				("All files", "*.*")
+			)
+		)
 		try:
 			if path:
 				with open(path, 'r') as f:
-					content = ast.literal_eval(f.read())	# 读取文件
+					content = json.loads(f.read())
+					# content = ast.literal_eval(f.read())	# 读取文件
 
 					# 写入数据
 					try:
@@ -71,10 +77,16 @@ class File():
 
 	# 存档
 	def save(self, content):
-		saveAs = filedialog.asksaveasfile()
+		string = json.dumps(content, indent = 4)
+		saveAs = filedialog.asksaveasfilename(
+			defaultextension = ".json", 
+			filetypes = (
+				("JSON", "*.json"), 
+			)
+		)
 		if saveAs:
 			try:
-				with open(saveAs.name, 'w') as f:
-					f.write(content)
+				with open(saveAs, 'w') as f:
+					f.write(string)
 			except BaseException as e:
 				messagebox.showerror('Error', e)
